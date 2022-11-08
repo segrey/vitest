@@ -1,7 +1,8 @@
+import { normalize } from 'pathe'
 import cac from 'cac'
 import c from 'picocolors'
 import { version } from '../../package.json'
-import type { VitestRunMode } from '../types'
+import type { Vitest, VitestRunMode } from '../types'
 import type { CliOptions } from './cli-api'
 import { startVitest } from './cli-api'
 import { divider } from './reporters/renderers/utils'
@@ -66,6 +67,10 @@ cli
   .action(benchmark)
 
 cli
+  .command('typecheck [...filters]')
+  .action(typecheck)
+
+cli
   .command('[...filters]')
   .action((filters, options) => start('test', filters, options))
 
@@ -92,15 +97,29 @@ async function benchmark(cliFilters: string[], options: CliOptions): Promise<voi
   await start('benchmark', cliFilters, options)
 }
 
-async function start(mode: VitestRunMode, cliFilters: string[], options: CliOptions): Promise<void> {
+async function typecheck(cliFilters: string[] = [], options: CliOptions = {}) {
+  console.warn(c.yellow('Testing types with tsc and vue-tsc is an experimental feature.\nBreaking changes might not follow semver, please pin Vitest\'s version when using it.'))
+  await start('typecheck', cliFilters, options)
+}
+
+function normalizeOptions(argv: CliOptions): CliOptions {
+  argv.root = argv.root && normalize(argv.root)
+  argv.config = argv.config && normalize(argv.config)
+  argv.dir = argv.dir && normalize(argv.dir)
+  return argv
+}
+
+async function start(mode: VitestRunMode, cliFilters: string[], options: CliOptions): Promise<Vitest | undefined> {
   try {
-    if (await startVitest(mode, cliFilters, options) === false)
-      process.exit()
+    const ctx = await startVitest(mode, cliFilters.map(normalize), normalizeOptions(options))
+    if (!ctx?.config.watch)
+      await ctx?.exit()
+    return ctx
   }
   catch (e) {
-    process.exitCode = 1
     console.error(`\n${c.red(divider(c.bold(c.inverse(' Unhandled Error '))))}`)
     console.error(e)
     console.error('\n\n')
+    process.exit(1)
   }
 }

@@ -136,6 +136,10 @@ export default defineConfig({
               link: '/guide/mocking',
             },
             {
+              text: 'Testing Types',
+              link: '/guide/testing-types',
+            },
+            {
               text: 'Vitest UI',
               link: '/guide/ui',
             },

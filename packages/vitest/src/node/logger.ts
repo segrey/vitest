@@ -2,6 +2,7 @@ import { createLogUpdate } from 'log-update'
 import c from 'picocolors'
 import { version } from '../../../../package.json'
 import type { ErrorWithDiff } from '../types'
+import type { TypeCheckError } from '../typecheck/typechecker'
 import { divider } from './reporters/renderers/utils'
 import type { Vitest } from './core'
 import { printError } from './error'
@@ -35,6 +36,15 @@ export class Logger {
     this.console.warn(...args)
   }
 
+  clearFullScreen(message: string) {
+    if (this.ctx.server.config.clearScreen === false) {
+      this.console.log(message)
+      return
+    }
+
+    this.console.log(`\x1Bc${message}`)
+  }
+
   clearScreen(message: string, force = false) {
     if (this.ctx.server.config.clearScreen === false) {
       this.console.log(message)
@@ -47,7 +57,7 @@ export class Logger {
   }
 
   private _clearScreen() {
-    if (!this._clearScreenPending)
+    if (this._clearScreenPending == null)
       return
 
     const log = this._clearScreenPending
@@ -117,6 +127,18 @@ export class Logger {
     this.log(errorMessage)
     await Promise.all(errors.map(async (err) => {
       await this.printError(err, true, (err as ErrorWithDiff).type || 'Unhandled Error')
+    }))
+    this.log(c.red(divider()))
+  }
+
+  async printSourceTypeErrors(errors: TypeCheckError[]) {
+    const errorMessage = c.red(c.bold(
+      `\nVitest found ${errors.length} error${errors.length > 1 ? 's' : ''} not related to your test files.`,
+    ))
+    this.log(c.red(divider(c.bold(c.inverse(' Source Errors ')))))
+    this.log(errorMessage)
+    await Promise.all(errors.map(async (err) => {
+      await this.printError(err, true)
     }))
     this.log(c.red(divider()))
   }

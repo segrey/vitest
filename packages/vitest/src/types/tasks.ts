@@ -52,9 +52,14 @@ export interface Test<ExtraContext = {}> extends TaskBase {
   result?: TaskResult
   fails?: boolean
   context: TestContext & ExtraContext
+  onFailed?: OnTestFailedHandler[]
 }
 
-export type Task = Test | Suite | File | Benchmark
+export interface TypeCheck extends TaskBase {
+  type: 'typecheck'
+}
+
+export type Task = Test | Suite | File | Benchmark | TypeCheck
 
 export type DoneCallback = (error?: any) => void
 export type TestFunction<ExtraContext = {}> = (context: TestContext & ExtraContext) => Awaitable<any> | void
@@ -213,4 +218,11 @@ export interface TestContext {
    * A expect instance bound to the test
    */
   expect: Vi.ExpectStatic
+
+  /**
+   * Extract hooks on test failed
+   */
+  onTestFailed: (fn: OnTestFailedHandler) => void
 }
+
+export type OnTestFailedHandler = (result: TaskResult) => Awaitable<void>
