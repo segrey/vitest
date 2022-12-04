@@ -506,9 +506,6 @@ Isolate environment for each test file. Does not work if you disable [`--threads
 
 ### coverage
 
-- **Type:** `CoverageC8Options | CoverageIstanbulOptions`
-- **Default:** `undefined`
-
 You can use [`c8`](https://github.com/bcoe/c8) or [`istanbul`](https://istanbul.js.org/) for coverage collection.
 
 #### provider
@@ -518,74 +515,185 @@ You can use [`c8`](https://github.com/bcoe/c8) or [`istanbul`](https://istanbul.
 
 Use `provider` to select the tool for coverage collection.
 
-#### CoverageC8Options
+#### enabled
 
-Used when `provider: 'c8'` is set. Coverage options are passed to [`c8`](https://github.com/bcoe/c8).
+- **Type:** `boolean`
+- **Default:** `false`
+- **Available for providers:** `'c8' | 'istanbul'`
 
-#### CoverageIstanbulOptions
+Enables coverage collection. Can be overriden using `--coverage` CLI option.
 
-Used when `provider: 'istanbul'` is set.
-
-##### include
+#### include
 
 - **Type:** `string[]`
 - **Default:** `['**']`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 List of files included in coverage as glob patterns
 
-##### exclude
+#### extension
+
+- **Type:** `string | string[]`
+- **Default:** `['.js', '.cjs', '.mjs', '.ts', '.tsx', '.jsx', '.vue', '.svelte']`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+#### exclude
 
 - **Type:** `string[]`
-- **Default:** `['coverage/**', 'dist/**', 'packages/*/test{,s}/**', '**/*.d.ts', 'cypress/**', 'test{,s}/**', 'test{,-*}.{js,cjs,mjs,ts,tsx,jsx}', '**/*{.,-}test.{js,cjs,mjs,ts,tsx,jsx}', '**/*{.,-}spec.{js,cjs,mjs,ts,tsx,jsx}', '**/__tests__/**', '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.{js,cjs,mjs,ts}', '**/.{eslint,mocha,prettier}rc.{js,cjs,yml}']`
+- **Default:**
+```js
+[
+  'coverage/**',
+  'dist/**',
+  'packages/*/test{,s}/**',
+  '**/*.d.ts',
+  'cypress/**',
+  'test{,s}/**',
+  'test{,-*}.{js,cjs,mjs,ts,tsx,jsx}',
+  '**/*{.,-}test.{js,cjs,mjs,ts,tsx,jsx}',
+  '**/*{.,-}spec.{js,cjs,mjs,ts,tsx,jsx}',
+  '**/__tests__/**',
+  '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.*',
+  '**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
+]
+```
+- **Available for providers:** `'c8' | 'istanbul'`
 
 List of files excluded from coverage as glob patterns.
 
-##### skipFull
+#### all
 
 - **Type:** `boolean`
 - **Default:** `false`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+Whether to include all files, including the untested ones into report.
+
+#### clean
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+Clean coverage results before running tests
+
+#### cleanOnRerun
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+Clean coverage report on watch rerun
+
+#### reportsDirectory
+
+- **Type:** `string`
+- **Default:** `'./coverage'`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+Directory to write coverage report to.
+When using `c8` provider a temporary `/tmp` directory is created for [V8 coverage results](https://nodejs.org/api/cli.html#coverage-output).
+
+#### reporter
+
+- **Type:** `string | string[]`
+- **Default:** `['text', 'html', 'clover', 'json']`
+- **Available for providers:** `'c8' | 'istanbul'`
+
+Coverage reporters to use. See [istanbul documentation](https://istanbul.js.org/docs/advanced/alternative-reporters/) for detailed list of all reporters.
+
+
+#### skipFull
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Do not show files with 100% statement, branch, and function coverage.
 
-##### perFile
+#### perFile
 
 - **Type:** `boolean`
 - **Default:** `false`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Check thresholds per file.
+See `lines`, `functions`, `branches` and `statements` for the actual thresholds.
 
-##### lines
+#### lines
 
 - **Type:** `number`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Threshold for lines.
+See [istanbul documentation](https://github.com/istanbuljs/nyc#coverage-thresholds) for more information.
 
-##### functions
+#### functions
 
 - **Type:** `number`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Threshold for functions.
+See [istanbul documentation](https://github.com/istanbuljs/nyc#coverage-thresholds) for more information.
 
-##### branches
+#### branches
 
 - **Type:** `number`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Threshold for branches.
+See [istanbul documentation](https://github.com/istanbuljs/nyc#coverage-thresholds) for more information.
 
-##### statements
+#### statements
 
 - **Type:** `number`
+- **Available for providers:** `'c8' | 'istanbul'`
 
 Threshold for statements.
+See [istanbul documentation](https://github.com/istanbuljs/nyc#coverage-thresholds) for more information.
 
-##### ignoreClassMethods
+#### allowExternal
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Available for providers:** `'c8'`
+
+Allow files from outside of your cwd.
+
+#### excludeNodeModules
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Available for providers:** `'c8'`
+
+Exclude coverage under `/node_modules/`.
+
+#### src
 
 - **Type:** `string[]`
-- **Default:** []
+- **Default:** `process.cwd()`
+- **Available for providers:** `'c8'`
+
+Specifies the directories that are used when `--all` is enabled.
+
+#### 100
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Available for providers:** `'c8'`
+
+Shortcut for `--check-coverage --lines 100 --functions 100 --branches 100 --statements 100`.
+
+#### ignoreClassMethods
+
+- **Type:** `string[]`
+- **Default:** `[]`
+- **Available for providers:** `'istanbul'`
 
 Set to array of class method names to ignore for coverage.
+See [istanbul documentation](https://github.com/istanbuljs/nyc#ignoring-methods) for more information.
 
-##### watermarks
+#### watermarks
 
 - **Type:**
 <!-- eslint-skip -->
@@ -609,14 +717,9 @@ Set to array of class method names to ignore for coverage.
 }
 ```
 
-Watermarks for statements, lines, branches and functions.
+- **Available for providers:** `'istanbul'`
 
-##### all
-
-- **Type:** `boolean`
-- **Default:** false
-
-Whether to include all files, including the untested ones into report.
+Watermarks for statements, lines, branches and functions. See [istanbul documentation](https://github.com/istanbuljs/nyc#high-and-low-watermarks) for more information.
 
 ### testNamePattern
 
@@ -763,7 +866,7 @@ Show heap usage after each test. Useful for debugging memory leaks.
 
 ### css
 
-- **Type**: `boolean | { include?, exclude? }`
+- **Type**: `boolean | { include?, exclude?, modules? }`
 
 Configure if CSS should be processed. When excluded, CSS files will be replaced with empty strings to bypass the subsequent processing. CSS Modules will return a proxy to not affect runtime.
 
@@ -773,6 +876,10 @@ Configure if CSS should be processed. When excluded, CSS files will be replaced 
 - **Default**: `[]`
 
 RegExp pattern for files that should return actual CSS and will be processed by Vite pipeline.
+
+:::tip
+To process all CSS files, use `/.+/`.
+:::
 
 #### css.exclude
 
@@ -791,11 +898,15 @@ RegExp pattern for files that will return an empty CSS file.
 - **Type**: `'stable' | 'scoped' | 'non-scoped'`
 - **Default**: `'stable'`
 
-If you decide to process CSS files, you can configure if class names inside CSS modules should be scoped. By default, Vitest exports a proxy, bypassing CSS Modules processing. You can choose one of the options:
+If you decide to process CSS files, you can configure if class names inside CSS modules should be scoped. You can choose one of the options:
 
 - `stable`: class names will be generated as `_${name}_${hashedFilename}`, which means that generated class will stay the same, if CSS content is changed, but will change, if the name of the file is modified, or file is moved to another folder. This setting is useful, if you use snapshot feature.
-- `scoped`: class names will be generated as usual, respecting `css.modules.generateScopeName` method, if you have one. By default, filename will be generated as `_${name}_${hash}`, where hash includes filename and content of the file.
-- `non-scoped`: class names will stay as they are defined in CSS.
+- `scoped`: class names will be generated as usual, respecting `css.modules.generateScopeName` method, if you have one and CSS processing is enabled. By default, filename will be generated as `_${name}_${hash}`, where hash includes filename and content of the file.
+- `non-scoped`: class names will not be hashed.
+
+::: warning
+By default, Vitest exports a proxy, bypassing CSS Modules processing. If you rely on CSS properties on your classes, you have to enable CSS processing using `include` option.
+:::
 
 ### maxConcurrency
 
@@ -821,7 +932,7 @@ Path to cache directory.
 
 ### sequence
 
-- **Type**: `{ sequencer?, shuffle?, seed? }`
+- **Type**: `{ sequencer?, shuffle?, seed?, hooks? }`
 
 Options for how tests should be sorted.
 
@@ -849,6 +960,17 @@ Vitest usually uses cache to sort tests, so long running tests start earlier - t
 - **Default**: `Date.now()`
 
 Sets the randomization seed, if tests are running in random order.
+
+#### sequence.hooks
+
+- **Type**: `'stack' | 'list' | 'parallel'`
+- **Default**: `'parallel'`
+
+Changes the order in which hooks are executed.
+
+- `stack` will order "after" hooks in reverse order, "before" hooks will run in the order they were defined
+- `list` will order all hooks in the order they are defined
+- `parallel` will run hooks in a single group in parallel (hooks in parent suites will still run before the current suite's hooks)
 
 ### typecheck
 
@@ -904,3 +1026,10 @@ By default, if Vitest finds source error, it will fail test suite.
 - **Default**: _tries to find closest tsconfig.json_
 
 Path to custom tsconfig, relative to the project root.
+
+### slowTestThreshold
+
+- **Type**: `number`
+- **Default**: `300`
+
+The number of milliseconds after which a test is considered slow and reported as such in the results.

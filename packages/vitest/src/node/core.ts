@@ -158,11 +158,16 @@ export class Vitest {
     const checker = new Typechecker(this, testsFilesList)
     this.typechecker = checker
     checker.onParseEnd(async ({ files, sourceErrors }) => {
-      await this.report('onCollected', files)
-      if (!files.length)
+      this.state.collectFiles(checker.getTestFiles())
+      await this.report('onCollected')
+      if (!files.length) {
         this.logger.printNoTestFound()
-      else
+      }
+      else {
+        if (hasFailed(files))
+          process.exitCode = 1
         await this.report('onFinished', files)
+      }
       if (sourceErrors.length && !this.config.typecheck.ignoreSourceErrors) {
         process.exitCode = 1
         await this.logger.printSourceTypeErrors(sourceErrors)
@@ -181,12 +186,14 @@ export class Vitest {
     })
     checker.onParseStart(async () => {
       await this.report('onInit', this)
-      await this.report('onCollected', checker.getTestFiles())
+      this.state.collectFiles(checker.getTestFiles())
+      await this.report('onCollected')
     })
     checker.onWatcherRerun(async () => {
       await this.report('onWatcherRerun', testsFilesList, 'File change detected. Triggering rerun.')
       await checker.collectTests()
-      await this.report('onCollected', checker.getTestFiles())
+      this.state.collectFiles(checker.getTestFiles())
+      await this.report('onCollected')
     })
     await checker.collectTests()
     await checker.start()
@@ -550,8 +557,9 @@ export class Vitest {
   async globTestFiles(filters: string[] = []) {
     const { include, exclude, includeSource } = this.config
 
-    const globOptions = {
+    const globOptions: fg.Options = {
       absolute: true,
+      dot: true,
       cwd: this.config.dir || this.config.root,
       ignore: exclude,
     }

@@ -196,7 +196,8 @@ You cannot use this syntax, when using Vitest as [type checker](/guide/testing-t
 :::
 
 ### test.each
-- **Type:** `(cases: ReadonlyArray<T>) => void`
+
+- **Type:** `(cases: ReadonlyArray<T>, ...args: any[]) => void`
 - **Alias:** `it.each`
 
   Use `test.each` when you need to run the same test with different variables.
@@ -241,6 +242,43 @@ You cannot use this syntax, when using Vitest as [type checker](/guide/testing-t
   // ✓ add(1, 1) -> 2
   // ✓ add(1, 2) -> 3
   // ✓ add(2, 1) -> 3
+  ```
+
+  You can also access Object attributes with `.`, if you are using objects as arguments:
+
+    ```ts
+    test.each`
+    a               | b      | expected
+    ${{ val: 1 }}   | ${'b'} | ${'1b'}
+    ${{ val: 2 }}   | ${'b'} | ${'2b'}
+    ${{ val: 3 }}   | ${'b'} | ${'3b'}
+    `('add($a.val, $b) -> $expected', ({ a, b, expected }) => {
+      expect(a.val + b).toBe(expected)
+    })
+
+    // this will return
+    // ✓ add(1, b) -> 1b
+    // ✓ add(2, b) -> 2b
+    // ✓ add(3, b) -> 3b
+    ```
+
+
+  Starting from Vitest 0.25.3, you can also use template string table.
+
+  * First row should be column names, separated by `|`;
+  * One or more subsequent rows of data supplied as template literal expressions using `${value}` syntax.
+
+  ```ts
+  test.each`
+    a               | b      | expected
+    ${1}            | ${1}   | ${2}
+    ${'a'}          | ${'b'} | ${'ab'}
+    ${[]}           | ${'b'} | ${'b'}
+    ${{}}           | ${'b'} | ${'[object Object]b'}
+    ${{ asd: 1 }}   | ${'b'} | ${'[object Object]b'}
+  `('returns $expected when $a is added $b', ({ a, b, expected }) => {
+    expect(a + b).toBe(expected)
+  })
   ```
 
   If you want to have access to `TestContext`, use `describe.each` with a single test.
@@ -547,7 +585,7 @@ You cannot use this syntax, when using Vitest as [type checker](/guide/testing-t
 
 ### describe.each
 
-- **Type:** `(cases: ReadonlyArray<T>): (name: string, fn: (...args: T[]) => void, options?: number | TestOptions) => void`
+- **Type:** `(cases: ReadonlyArray<T>, ...args: any[]): (name: string, fn: (...args: T[]) => void, options?: number | TestOptions) => void`
 
   Use `describe.each` if you have more than one test that depends on the same data.
 
@@ -567,6 +605,26 @@ You cannot use this syntax, when using Vitest as [type checker](/guide/testing-t
 
     test(`returned value not be less than ${expected}`, () => {
       expect(a + b).not.toBeLessThan(expected)
+    })
+  })
+  ```
+
+  Starting from Vitest 0.25.3, you can also use template string table.
+
+  * First row should be column names, separated by `|`;
+  * One or more subsequent rows of data supplied as template literal expressions using `${value}` syntax.
+
+  ```ts
+  describe.each`
+    a               | b      | expected
+    ${1}            | ${1}   | ${2}
+    ${'a'}          | ${'b'} | ${'ab'}
+    ${[]}           | ${'b'} | ${'b'}
+    ${{}}           | ${'b'} | ${'[object Object]b'}
+    ${{ asd: 1 }}   | ${'b'} | ${'[object Object]b'}
+  `('describe template string add($a, $b)', ({ a, b, expected }) => {
+    test(`returns ${expected}`, () => {
+      expect(a + b).toBe(expected)
     })
   })
   ```
@@ -2178,10 +2236,9 @@ You cannot use this syntax, when using Vitest as [type checker](/guide/testing-t
   ```ts
   import { expectTypeOf } from 'vitest'
 
-  expectTypeOf(42).not.toBeArray()
-  expectTypeOf([]).toBeArray()
-  expectTypeOf([1, 2]).toBeArray()
-  expectTypeOf<number[]>().toBeArray()
+  expectTypeOf(42).not.toBeString()
+  expectTypeOf('').toBeString()
+  expectTypeOf('a').toBeString()
   ```
 
 ### toBeBoolean
@@ -2598,6 +2655,12 @@ Vitest provides utility functions to help you out through it's **vi** helper. Yo
 
   Will call [`.mockReset()`](/api/#mockreset) on all spies. This will clear mock history and reset its implementation to an empty function (will return `undefined`).
 
+### vi.resetConfig
+
+- **Type**: `RuntimeConfig`
+
+  If [`vi.setConfig`](/api/#vi-setconfig) was called before, this will reset config to the original state.
+
 ### vi.resetModules
 
 - **Type**: `() => Vitest`
@@ -2690,6 +2753,12 @@ Vitest provides utility functions to help you out through it's **vi** helper. Yo
 
   vi.useRealTimers()
   ```
+
+### vi.setConfig
+
+- **Type**: `RuntimeConfig`
+
+  Updates config for the current test file. You can only affect values that are used, when executing tests.
 
 ### vi.spyOn
 
