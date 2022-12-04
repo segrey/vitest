@@ -16,6 +16,7 @@ test('JSON', () => {
 
   const output = JSON.stringify(input)
 
-  expect(output).eq('{"foo":"hello","bar":"world"}')
+  expect(output).eq('{"baz":"hello","bar":"world"}')
+  console.log('[after failed assertion] should not be printed')
   assert.deepEqual(JSON.parse(output), input, 'matches original')
 })
